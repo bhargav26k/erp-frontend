@@ -1,0 +1,50 @@
+.receipt-card {
+  max-width: 750px;
+  font-size: 15px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 10px;
+}
+
+.receipt-heading {
+  font-size: 18px;
+}
+
+.small-table {
+  border: 1px solid #333 !important;
+}
+
+.small-table th,
+.small-table td {
+  border: 1px solid #333 !important;
+  padding: 0.6rem;
+  font-size: 14px;
+}
+@media (max-width: 576px) {
+  .receipt-card {
+    font-size: 13px;
+    border-radius: 0;
+  }
+
+  .receipt-heading {
+    font-size: 16px;
+  }
+
+  .small-table td,
+  .small-table th {
+    font-size: 13px;
+    padding: 0.4rem;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+
+@media print {
+  body {
+    zoom: 95%; /* Adjust percentage as needed */
+  }
+}
+

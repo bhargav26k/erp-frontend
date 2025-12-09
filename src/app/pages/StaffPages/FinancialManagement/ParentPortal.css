@@ -1,0 +1,16 @@
+@media (max-width: 768px) {
+    .payment-item {
+      grid-template-columns: 1fr !important;
+    }
+    
+    .status-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+    
+    .amounts {
+      text-align: left !important;
+      margin-top: 8px;
+    }
+  }

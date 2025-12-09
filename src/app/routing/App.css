@@ -1,0 +1,58 @@
+/* Full-screen loader container */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  /* Loader animation */
+  .loader {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    --c: no-repeat linear-gradient(#25b09b 0 0);
+    background:
+      var(--c) center/100% 10px,
+      var(--c) center/10px 100%;
+  }
+  
+  /* Remove any extra animations from ::before */
+  .loader::before {
+    content: ''; /* Only keeps the squares */
+    position: absolute;
+    inset: 0;
+    background:
+      var(--c) 0 0,
+      var(--c) 100% 0,
+      var(--c) 0 100%,
+      var(--c) 100% 100%;
+    background-size: 15.5px 15.5px;
+    animation: l16 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
+  }
+  
+  /* 🚨 This removes the extra unwanted spinner 🚨 */
+  .loader::after {
+    content: none !important;
+    display: none !important;
+  }
+  
+  /* Keyframes for animation */
+  @keyframes l16 {
+    33% { inset: -10px; transform: rotate(0deg); }
+    66% { inset: -10px; transform: rotate(90deg); }
+    100% { inset: 0; transform: rotate(90deg); }
+  }
+  
+  .menu-icon{
+    width: 26px !important;
+  }
+  .menu-sub-dropdown{
+    z-index: 999;
+  }

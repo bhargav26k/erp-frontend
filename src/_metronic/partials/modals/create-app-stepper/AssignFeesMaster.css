@@ -1,0 +1,18 @@
+.table-container {
+    position: relative;
+    max-height: 500px; /* Adjust based on your needs */
+    overflow: auto;
+  }
+  
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa; /* Adjust based on your design */
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6; /* Optional for visual separation */
+  }
+  
+  .table tbody tr {
+    border-bottom: 1px solid #dee2e6; /* Optional for visual separation */
+  }
+  
