@@ -1,84 +1,67 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {AuthModel} from './_models'
+import { AuthModel } from "./_model";
 
-const AUTH_LOCAL_STORAGE_KEY = 'kt-auth-react-v'
-const Logged_In_Toast = 'logged-in-toast'
-const EXPIRY_HOURS = 2
+const AUTH_STORAGE_KEY = "nilesh-1999-rent-433q43r5432532";
 
 const getAuth = (): AuthModel | undefined => {
-  if (!localStorage) return
-
-  const lsValue: string | null = localStorage.getItem(AUTH_LOCAL_STORAGE_KEY)
-  if (!lsValue) return
-
-  try {
-    const auth: AuthModel & { login_time?: string; last_activity_time?: string } =
-      JSON.parse(lsValue)
-
-    const now = new Date()
-
-    if (auth?.last_activity_time) {
-      const lastActivity = new Date(auth.last_activity_time)
-      const diffInHours = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60)
-
-      if (diffInHours > EXPIRY_HOURS) {
-        console.log('User inactive for more than 5 hours. Logging out.')
-        removeAuth()
-        return undefined
-      }
+    if (!localStorage) {
+        return
     }
 
-    // Update last activity time
-    const updatedAuth = {...auth, last_activity_time: now.toISOString()}
-    localStorage.setItem(AUTH_LOCAL_STORAGE_KEY, JSON.stringify(updatedAuth))
+    const lsValue: string | null = localStorage.getItem(AUTH_STORAGE_KEY)
+    if (!lsValue) {
+        return
+    }
 
-    return updatedAuth
-  } catch (error) {
-    console.error('AUTH LOCAL STORAGE PARSE ERROR', error)
-  }
+    try {
+        const auth: AuthModel = JSON.parse(lsValue) as AuthModel
+        if (auth) {
+            // You can easily check auth_token expiration also
+            return auth
+        }
+    } catch (error) {
+        console.error('AUTH LOCAL STORAGE PARSE ERROR', error)
+    }
 }
 
 const setAuth = (auth: AuthModel) => {
-  if (!localStorage) return
-
-  try {
-    const now = new Date().toISOString()
-    const authWithTime = {
-      ...auth,
-      login_time: now,
-      last_activity_time: now,
+    if (!localStorage) {
+        return
     }
-    const lsValue = JSON.stringify(authWithTime)
-    localStorage.setItem(AUTH_LOCAL_STORAGE_KEY, lsValue)
-  } catch (error) {
-    console.error('AUTH LOCAL STORAGE SAVE ERROR', error)
-  }
+
+    try {
+        const lsValue = JSON.stringify(auth)
+        localStorage.setItem(AUTH_STORAGE_KEY, lsValue)
+    } catch (error) {
+        console.error('AUTH LOCAL STORAGE SAVE ERROR', error)
+    }
 }
 
 const removeAuth = () => {
-  if (!localStorage) return
+    if (!localStorage) {
+        return
+    }
 
-  try {
-    localStorage.removeItem(AUTH_LOCAL_STORAGE_KEY)
-    localStorage.removeItem(Logged_In_Toast)
-  } catch (error) {
-    console.error('AUTH LOCAL STORAGE REMOVE ERROR', error)
-  }
+    try {
+        localStorage.removeItem(AUTH_STORAGE_KEY)
+    } catch (error) {
+        console.error('AUTH LOCAL STORAGE REMOVE ERROR', error)
+    }
 }
 
 export function setupAxios(axios: any) {
-  axios.defaults.headers.Accept = 'application/json'
-  axios.interceptors.request.use(
-    (config: {headers: {Authorization: string}}) => {
-      const auth = getAuth()
-      if (auth && auth.api_token) {
-        config.headers.Authorization = `Bearer ${auth.api_token}`
-      }
+    axios.defaults.headers.Accept = 'application/json'
+    axios.interceptors.request.use(
+        (config: { headers: { Authorization: string } }) => {
+            const auth = getAuth()
+            if (auth && auth.access_token) {
+                config.headers.Authorization = auth.access_token;
+                //   `Bearer ${auth.api_token}`
+            }
 
-      return config
-    },
-    (err: any) => Promise.reject(err)
-  )
+            return config
+        },
+        (err: any) => Promise.reject(err)
+    )
 }
 
-export {getAuth, setAuth, removeAuth, AUTH_LOCAL_STORAGE_KEY}
+export { getAuth, setAuth, removeAuth, AUTH_STORAGE_KEY }

@@ -1,205 +1,66 @@
-import {
-  Route,
-  Routes,
-  Navigate,
-  useNavigate,
-  matchPath,
-} from "react-router-dom";
-import { MasterLayout } from "../../_metronic/layout/MasterLayout";
-import { useAuth } from "../../app/modules/auth/core/Auth";
-import { useEffect, useState } from "react";
-import { DOMAIN } from "../../app/routing/ApiEndpoints";
-import { DashboardWrapper } from "../pages/dashboard/DashboardWrapper";
-import { ErrorsPage } from "../modules/errors/ErrorsPage";
-import Loader from "./Loader"; // Import the consolidated loader
-import "./App.css";
+import { Navigate, Route, Routes } from "react-router-dom"
+import { MasterLayout } from "../../_nilesh/layout/MasterLayout"
+import { DashboardWrapper } from "../../pages/DashboardPage"
+import OrganizationsPage from "../../pages/organizations/OrganizationsPage"
+import ManageLayout from "../../_nilesh/layout/ManageLayout"
+import PropertyPartsPage from "../../pages/PropertyParts/PropertyPartsPage"
+import MyUnitsPage from "../../pages/MyUnits"
+import Ecommerce from "../../pages/Dashboard/ECommerce"
+import ManageOrganizationsPage from "../../pages/organizations/ManageOrganizationsPage"
+import MakePaymentPage from "../../pages/MakePaymentPage"
+import ViewContractsPage from "../../pages/RentalAgreements/ViewContractsPage"
+import ContractManagementPage from "../../pages/RentalAgreements/ContractManagementPage"
+import PaymentHistoryPage from "../../pages/PaymentHistoryPage"
+import PendingTDSPage from "../../pages/TDS/PendingTDSPage"
+import TenantPaymentHistoryPage from "../../pages/TenantPaymentHistory"
+import TenantPaymentStatusPage from "../../pages/TenantPaymentStatusPage"
+import TDSDeductionsPage from "../../pages/TDS/TDSDeductionsPage"
+import RaisePaymentDisputesPage from "../../pages/RaisePaymentDisputesPage"
+import RecurringInvoicesPage from "../../pages/RecurringInvoicesPage"
+import RentAjustmentsRenewalsPage from "../../pages/RentalAgreements/RentAjustmentsRenewalsPage"
+import ContactManagementPage from "../../pages/ContactManagementPage"
+import MaintenanceRequest from "../../pages/MaintenanceRequest"
+import ModulePage from "../../pages/ModulePage"
+import PropertiesPage from "../../pages/Properties/PropertiesPage"
+import TenantsPage from "../../pages/Tenant/TenantsPage"
+import RentalAgreementsPage from "../../pages/RentalAgreements/RentalAgreementsPage"
+import HierarchyManagement from "../../pages/HierarchyManagement"
 
-interface RouteConfig {
-  path: string;
-  component: React.ComponentType<any>;
+
+
+const PrivateRoutes = () => {
+
+    return (
+        <Routes >
+            <Route element={<MasterLayout />}>
+                <Route path="auth/*" element={<Navigate to='/dashboard' />} />
+                <Route path='dashboard' element={<Ecommerce />} />
+            </Route>
+            <Route element={<ManageLayout />}>
+                <Route path="/organizations-list" element={<OrganizationsPage />} />
+                <Route path="/manage-organizations" element={<ManageOrganizationsPage />} />
+                <Route path="/module-management" element={<ModulePage />} />
+                <Route path="/manage-properties" element={<PropertiesPage />} />
+                <Route path="/manage-property-parts" element={<PropertyPartsPage />} />
+                <Route path="/manage-tenants" element={<TenantsPage />} />
+                <Route path="/manage-contract" element={<ContractManagementPage />} />
+                <Route path="/payment-history" element={<TenantPaymentHistoryPage />} />
+                <Route path="/rental-agreements" element={<RentalAgreementsPage />} />
+                <Route path="/recurring-invoices" element={<RecurringInvoicesPage />} />
+                <Route path="/rent-ajustments-renewals" element={<RentAjustmentsRenewalsPage />} />
+                <Route path="/payment-status" element={<TenantPaymentStatusPage />} />
+                <Route path="/tds-deductions-reports" element={<TDSDeductionsPage />} />
+                <Route path="/make-payment" element={<MakePaymentPage />} />
+                <Route path="/tds-deduction" element={<PendingTDSPage />} />
+                <Route path="/payment-receipts" element={<PaymentHistoryPage />} />
+                <Route path="/contract-renewal-status" element={<ViewContractsPage />} />
+                <Route path="/raise-payment-disputes" element={<RaisePaymentDisputesPage />} />
+                <Route path="/maintenance-requests" element={<MaintenanceRequest />} />
+                <Route path="/contact-management" element={<ContactManagementPage />} />
+                <Route path="/hierarchy" element={<HierarchyManagement />} />
+            </Route>
+        </Routes>
+    )
 }
 
-interface PrivateRoutesProps {
-  setLoading?: (loading: boolean) => void;
-}
-
-const PrivateRoutes: React.FC<PrivateRoutesProps> = ({ setLoading: setParentLoading }) => {
-  const { currentUser } = useAuth();
-
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [routes, setRoutes] = useState<RouteConfig[]>([]);
-  const [authorizedPaths, setAuthorizedPaths] = useState<string[]>([]);
-  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  
-  const navigate = useNavigate();
-  const school_id = currentUser?.school_id;
-  const role_id = currentUser?.role_id;
-  const designation_id = currentUser?.designation_id;
-
-  // Fetch User Role
-  useEffect(() => {
-    if (currentUser) {
-      setUserRole(currentUser.role_name);
-    }
-  }, [currentUser]);
-
-  // Fetch Subscription ID for School Admin
-  useEffect(() => {
-    const fetchSubscriptionId = async () => {
-      if (
-        school_id &&
-        (userRole === "School Admin" || userRole === "School Master")
-      ) {
-        try {
-          const response = await fetch(
-            `${DOMAIN}/api/superadmin/get-subscription-id/${school_id}`
-          );
-          if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-          }
-          const data = await response.json();
-          setSubscriptionId(data.result[0].subscription_id);
-        } catch (err) {
-          console.error("Error fetching subscription ID:", err);
-        }
-      }
-    };
-
-    fetchSubscriptionId();
-  }, [school_id, userRole]);
-
-  // Common function to fetch and set routes
-  const fetchRoutes = async (url: string, basePath: string) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch routes");
-      }
-      const data = await response.json();
-
-      let componentModule;
-      const routesPromises = Object.keys(data).flatMap((group) =>
-        data[group].map(async (module: any) => {
-          try {
-            if (module.component_name && module.path) {
-              if (userRole === "Super Admin") {
-                componentModule = await import(
-                  /* @vite-ignore */ `${basePath}/${module.component_name}`
-                );
-              } else {
-                componentModule = await import(
-                  /* @vite-ignore */ `${basePath}${module.parent_module}/${module.component_name}`
-                );
-              }
-
-              return {
-                path: module.path,
-                component: componentModule.default,
-              };
-            }
-          } catch (err) {
-            console.error(
-              `Failed to import component ${module.component_name}`,
-              err
-            );
-            return null;
-          }
-        })
-      );
-
-      const fetchedRoutes = (await Promise.all(routesPromises)).filter(Boolean);
-
-      setRoutes(fetchedRoutes);
-      setAuthorizedPaths((prevPaths) => [
-        ...prevPaths,
-        ...fetchedRoutes.map((route) => route.path),
-      ]);
-    } catch (error) {
-      console.error("Error fetching routes:", error);
-    } finally {
-      setTimeout(() => {
-        setLoading(false);
-        // Also update parent loading state if provided
-        if (setParentLoading) {
-          setParentLoading(false);
-        }
-      }, 1000);
-    }    
-  };
-
-  // Fetch routes based on user role
-  useEffect(() => {
-    if (userRole) {
-      if (userRole === "Super Admin") {
-        fetchRoutes(
-          `${DOMAIN}/api/superadmin/get-modules`,
-          "../pages/SuperAdminPages/"
-        );
-      } else if (
-        (userRole === "School Admin" || userRole === "School Master") &&
-        subscriptionId
-      ) {
-        fetchRoutes(
-          `${DOMAIN}/api/superadmin/get-parent-module/${subscriptionId}`,
-          "../pages/StaffPages/"
-        );
-      } else if (userRole === "School Staff" && designation_id) {
-        fetchRoutes(
-          `${DOMAIN}/api/school/get-modules/${school_id}/${role_id}/${designation_id}`,
-          "../pages/StaffPages/"
-        );
-      }
-    }
-  }, [userRole, subscriptionId, designation_id, school_id, role_id]);
-
-  // Redirect to unauthorized if the path is not in authorized paths
-  const matchPath = (path: string, currentPath: string) => {
-    const pathRegex = new RegExp(`^${path.replace(/:\w+/g, "[^/]+")}$`);
-    return pathRegex.test(currentPath);
-  };
-
-  useEffect(() => {
-    if (!loading && window.location.pathname) {
-      const currentPath = window.location.pathname.split("?")[0];
-
-      const pathIsAuthorized = authorizedPaths.some((path) =>
-        matchPath(path, currentPath)
-      );
-
-      if (
-        !pathIsAuthorized &&
-        currentPath !== "/" &&
-        currentPath !== "/unauthorized"
-      ) {
-        navigate("/unauthorized", { replace: true });
-      }
-    }
-  }, [authorizedPaths, loading, navigate]);
-
-  // Use the consolidated loader
-  if (loading || routes.length === 0) {
-    return <Loader message="Initializing application..." overlay={true} />;
-  }
-  
-  const AuthRedirect = () => <Navigate to="/" />;
-
-  return (
-    <Routes>
-      <Route element={<MasterLayout />}>
-        <Route path="auth/*" element={<AuthRedirect />} />
-        {routes.map(({ path, component: Component }) => {
-          if (!Component) {
-            console.error(`Component for path ${path} is undefined`);
-            return null;
-          }
-          return <Route key={path} path={path} element={<Component />} />;
-        })}
-        <Route path="/" element={<DashboardWrapper />} />
-        <Route path="/unauthorized" element={<ErrorsPage />} />
-      </Route>
-    </Routes>
-  );
-};
-
-export default PrivateRoutes;
+export { PrivateRoutes }
